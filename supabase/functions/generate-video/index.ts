@@ -249,7 +249,7 @@ function buildGuidedStartTargetVideoRequest(
     parameters: {
       aspectRatio: "9:16",
       sampleCount: 1,
-      durationSeconds: 5,
+      durationSeconds: 8,
       personGeneration: "allow_adult",
     },
   };
