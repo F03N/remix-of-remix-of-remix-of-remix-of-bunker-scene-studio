@@ -33,6 +33,9 @@ const SHARED_STYLE_RULES = [
   'Same camera angle and framing.',
   'Realistic construction progression only.',
   'No fantasy, no instant transformation.',
+  'No dramatic motion or flashy animation.',
+  'No camera orbit, swing, or fast zoom.',
+  'No heavy morphing or surreal effects.',
 ];
 
 const NEGATIVE_CONSTRAINTS = [
@@ -40,6 +43,12 @@ const NEGATIVE_CONSTRAINTS = [
   'no camera reset', 'no structure redesign', 'no unrealistic morphing',
   'no sudden full completion', 'no surreal effects', 'no cartoon style',
   'no different bunker', 'no teleportation', 'no liquid dissolve',
+  'no dramatic motion', 'no flashy animation', 'no orbit',
+  'no whip movement', 'no fast zoom', 'no camera swing',
+  'no heavy morphing', 'no extra workers unless strictly necessary',
+  'no environment change', 'no unrealistic construction motion',
+  'no exaggerated scene changes', 'no scene redesign',
+  'no dramatic camera behavior', 'no instant material change',
 ];
 
 export function buildPlanningPrompt(params: {
