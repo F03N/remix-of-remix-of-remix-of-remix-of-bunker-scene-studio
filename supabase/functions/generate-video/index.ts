@@ -98,7 +98,7 @@ async function fetchImageAsBase64(url: string): Promise<{ base64: string; byteLe
 }
 
 // ────────────────────────────────────────────────────────────
-// PROMPT BUILDERS
+// PROMPT BUILDERS — STRICT BUNKER RESTORATION ENGINE
 // ────────────────────────────────────────────────────────────
 
 const NEGATIVE_CONSTRAINTS = [
@@ -106,7 +106,27 @@ const NEGATIVE_CONSTRAINTS = [
   'no camera reset', 'no structure redesign', 'no unrealistic morphing',
   'no sudden full completion', 'no surreal effects', 'no cartoon style',
   'no different bunker', 'no teleportation', 'no liquid dissolve',
+  'no dramatic motion', 'no flashy animation', 'no orbit',
+  'no whip movement', 'no fast zoom', 'no camera swing',
+  'no heavy morphing', 'no extra workers unless strictly necessary',
+  'no environment change', 'no unrealistic construction motion',
+  'no exaggerated scene changes', 'no scene redesign',
+  'no object teleportation', 'no instant material change',
+  'no color shift outside natural lighting', 'no dramatic camera behavior',
 ];
+
+const STRICT_IDENTITY_BLOCK = [
+  `ABSOLUTE IDENTITY LOCK:`,
+  `- SAME bunker structure in every frame`,
+  `- SAME camera angle — do NOT rotate, orbit, swing, or reposition the camera`,
+  `- SAME framing and composition — do NOT change field of view or crop`,
+  `- SAME environment — do NOT change sky, terrain, surroundings, lighting direction`,
+  `- SAME architectural layout — do NOT add, remove, or rearrange structural elements`,
+  `- Only animate the MINIMAL realistic visual changes needed for this construction phase`,
+  `- All motion must be physically believable — like a real construction time-lapse`,
+  `- Suppress ALL dramatic, flashy, or cinematic camera movements`,
+  `- Suppress ALL morphing, warping, dissolving, or liquid effects`,
+].join('\n');
 
 interface PromptParams {
   fromScene: number;
@@ -118,92 +138,121 @@ interface PromptParams {
   transitionControls?: Record<string, number>;
 }
 
+function getSceneStageInstructions(toScene: number): string {
+  if (toScene <= 2) return 'SCENE STAGE: Exterior establishing. Almost zero motion. Camera completely static. Only subtle atmospheric changes — faint dust, natural light shift. No workers unless essential.';
+  if (toScene <= 4) return 'SCENE STAGE: Exterior repair. Light dust, tiny sparks, almost static camera. Minimal visible construction changes.';
+  if (toScene === 5) return 'SCENE STAGE: Underground entry. Very slow controlled descent reveal. Soft light shift. Near-static camera with barely perceptible push.';
+  if (toScene <= 7) return 'SCENE STAGE: Interior construction. Tiny localized activity only. Soft interior light shifts. Camera nearly locked.';
+  if (toScene === 8) return 'SCENE STAGE: Interior design finishing. Subtle furnishing placement, gentle light adjustments. Camera static.';
+  return 'SCENE STAGE: Final reveal. Slightly more polished but still restrained. Gentle light sweep, final details settling. No dramatic camera sweep.';
+}
+
 function buildControlLines(controls: Record<string, number> | undefined, isExact: boolean): string[] {
   if (!controls) return [];
   const lines: string[] = [];
-  const ms = controls.motionStrength ?? 50;
-  const ci = controls.cameraIntensity ?? 30;
-  const rp = controls.realismPriority ?? 80;
-  const mSup = controls.morphSuppression ?? 90;
-  const ts = controls.targetStrictness ?? (isExact ? 95 : 70);
-  const cs = controls.continuityStrictness ?? 90;
+  const ms = controls.motionStrength ?? 20;
+  const ci = controls.cameraIntensity ?? 5;
+  const rp = controls.realismPriority ?? 95;
+  const mSup = controls.morphSuppression ?? 98;
+  const ts = controls.targetStrictness ?? (isExact ? 95 : 90);
+  const cs = controls.continuityStrictness ?? 98;
 
-  if (ms < 30) lines.push('Use very subtle, minimal motion.');
-  else if (ms > 70) lines.push('Use noticeable, dynamic construction motion.');
-  if (ci < 20) lines.push('Keep the camera completely static.');
-  else if (ci > 60) lines.push('Allow gentle camera drift or slow zoom.');
-  if (rp > 80) lines.push('Prioritize maximum photorealism.');
-  if (mSup > 70) lines.push('Strongly suppress morphing, warping, or dissolve effects.');
-  if (isExact && ts > 80) lines.push('The final frame MUST closely match the end frame keyframe.');
-  else if (!isExact && ts > 70) lines.push('Guide the transition strongly toward the target end state.');
-  if (cs > 80) lines.push('Architectural continuity is critical.');
+  if (ms <= 10) lines.push('Near-zero motion. Scene should appear almost completely still.');
+  else if (ms <= 25) lines.push('Very subtle, barely perceptible motion. Faint dust, slight shadow shift only.');
+  else if (ms <= 40) lines.push('Restrained motion. Small localized construction activity only.');
+  else if (ms > 70) lines.push('Moderate construction motion. Still realistic and restrained.');
+
+  if (ci <= 5) lines.push('Camera MUST be completely locked and static. Zero camera movement.');
+  else if (ci <= 15) lines.push('Camera essentially static. Barely perceptible extremely slow push-in at most.');
+  else if (ci <= 30) lines.push('Camera nearly static. Very subtle slow drift only. No zoom, pan, or rotation.');
+  else lines.push('Gentle camera drift only. No orbit, swing, or fast zoom.');
+
+  if (rp > 90) lines.push('MAXIMUM photorealism. Every frame must look like real camera footage.');
+  else if (rp > 70) lines.push('High photorealism priority.');
+
+  if (mSup > 95) lines.push('AGGRESSIVELY suppress ALL morphing, warping, dissolving, or liquid effects.');
+  else if (mSup > 80) lines.push('Strongly suppress morphing and dissolve effects.');
+
+  if (isExact && ts > 80) lines.push('Final frame MUST closely match the end frame keyframe.');
+  else if (!isExact && ts > 85) lines.push('Guide transition very strongly toward the target end state.');
+  else if (!isExact && ts > 70) lines.push('Guide transition toward the target end state appearance.');
+
+  if (cs > 95) lines.push('Architectural and structural continuity is ABSOLUTE. No layout drift.');
+  else if (cs > 80) lines.push('Architectural continuity is critical.');
+
   return lines;
 }
 
 function buildExactDualFramePrompt(p: PromptParams): string {
   const controlLines = buildControlLines(p.transitionControls, true);
+  const stageInstructions = getSceneStageInstructions(p.toScene);
   const parts = [
-    `Use the first image as the EXACT start frame — the video MUST begin from this precise image.`,
-    `Use the second image as the EXACT end frame — the video MUST end on this precise image.`,
-    `Both frames are real visual conditioning keyframes enforced by the provider.`,
+    `Create a slow, subtle, realistic construction time-lapse transition.`,
     ``,
-    `Generate a realistic cinematic transition from Scene ${p.fromScene} ("${p.fromSceneTitle || ''}") to Scene ${p.toScene} ("${p.toSceneTitle || ''}").`,
-    `Animate ONLY the realistic visual construction/restoration changes needed between these two exact frames.`,
-    `Motion direction: ${p.animationPrompt}`,
+    `Use the first image as the EXACT start frame.`,
+    `Use the second image as the EXACT end frame.`,
+    `Both frames are real visual conditioning keyframes.`,
+    ``,
+    STRICT_IDENTITY_BLOCK,
+    ``,
+    stageInstructions,
+    ``,
+    `Transition from Scene ${p.fromScene} ("${p.fromSceneTitle || ''}") to Scene ${p.toScene} ("${p.toSceneTitle || ''}").`,
+    `Animate ONLY the minimal, realistic visual construction changes between these two exact frames.`,
+    `Motion guidance: ${p.animationPrompt}`,
     ``,
   ];
   if (controlLines.length > 0) {
-    parts.push(`TRANSITION CONTROLS:`, ...controlLines.map(l => `- ${l}`), ``);
+    parts.push(`STRICT MOTION CONTROLS:`, ...controlLines.map(l => `- ${l}`), ``);
   }
   parts.push(
-    `STRICT RULES:`,
-    `- Maintain the SAME bunker, SAME camera angle, SAME framing, SAME composition, SAME environment.`,
-    `- Do NOT redesign the bunker layout.`,
-    `- Do NOT change the camera position or angle.`,
-    `- Do NOT add random objects or elements not present in either frame.`,
-    `- Do NOT use heavy morphing, liquid effects, or surreal distortions.`,
-    `- Do NOT reset or jump the camera.`,
-    `- Keep the transition physically believable — like a construction time-lapse.`,
-    `- Maintain architectural continuity between start and end frames.`,
-    `- The start and end frames are EXACT — do not deviate from them.`,
+    `PERMITTED MOTION ONLY: subtle dust, faint light flicker, tiny localized worker activity if strictly required, very slow push-in if controls allow, small debris placement.`,
     ``,
-    `NEGATIVE: ${NEGATIVE_CONSTRAINTS.join(', ')}.`,
+    `FORBIDDEN:`,
+    ...NEGATIVE_CONSTRAINTS.map(n => `- ${n}`),
     ``,
-    `Photorealistic, cinematic, vertical 9:16 portrait format, smooth construction time-lapse motion.`,
+    `Photorealistic construction time-lapse. Vertical 9:16 portrait. Every frame = real camera footage.`,
   );
   return parts.join('\n');
 }
 
 function buildGuidedStartTargetPrompt(p: PromptParams): string {
   const controlLines = buildControlLines(p.transitionControls, false);
+  const stageInstructions = getSceneStageInstructions(p.toScene);
   const parts = [
+    `Create a slow, subtle, realistic construction time-lapse transition.`,
+    `Keep the EXACT same bunker, camera angle, framing, composition, structure, and environment.`,
+    `Only animate the minimal visual changes needed to move from the start image toward the target scene.`,
+    `Use only subtle dust, slight light flicker, tiny localized worker motion if necessary, and a very slow push-in only when appropriate.`,
+    `Suppress dramatic motion, morphing, redesign, random objects, and exaggerated scene changes.`,
+    ``,
     `Use the provided image as the EXACT start frame.`,
     ``,
-    `TARGET END STATE: Scene ${p.toScene} ("${p.toSceneTitle || ''}"): ${p.toSceneImagePrompt?.substring(0, 250) || ''}`,
-    `Smoothly animate realistic construction/restoration progress from the current state TOWARD that target.`,
-    `The final frame should closely resemble the target but exact match is not guaranteed.`,
+    STRICT_IDENTITY_BLOCK,
     ``,
-    `Motion: ${p.animationPrompt}`,
+    stageInstructions,
     ``,
   ];
+  if (p.toSceneImagePrompt) {
+    parts.push(
+      `TARGET END STATE: Scene ${p.toScene} ("${p.toSceneTitle || ''}"): ${p.toSceneImagePrompt.substring(0, 300)}`,
+      `Guide transition TOWARD this visual state. Final frame should approach this appearance.`,
+      ``
+    );
+  } else {
+    parts.push(`Target: Scene ${p.toScene} ("${p.toSceneTitle || ''}"). Animate gradual realistic construction progress.`, ``);
+  }
+  parts.push(`Motion guidance: ${p.animationPrompt}`, ``);
   if (controlLines.length > 0) {
-    parts.push(`TRANSITION CONTROLS:`, ...controlLines.map(l => `- ${l}`), ``);
+    parts.push(`STRICT MOTION CONTROLS:`, ...controlLines.map(l => `- ${l}`), ``);
   }
   parts.push(
-    `Maintain the SAME bunker, SAME camera angle, SAME framing, SAME composition, SAME environment throughout.`,
+    `PERMITTED MOTION ONLY: subtle dust, faint light flicker, tiny localized worker activity if strictly required, very slow push-in if controls allow, small debris placement.`,
     ``,
-    `STRICT RULES:`,
-    `- Do NOT redesign the bunker layout.`,
-    `- Do NOT change the camera position or angle.`,
-    `- Do NOT add random objects not present in the scene.`,
-    `- Do NOT use heavy morphing, liquid effects, or surreal distortions.`,
-    `- Do NOT reset or jump the camera.`,
-    `- Keep the transition physically believable — like a construction time-lapse.`,
-    `- Maintain architectural continuity.`,
+    `FORBIDDEN:`,
+    ...NEGATIVE_CONSTRAINTS.map(n => `- ${n}`),
     ``,
-    `NEGATIVE: ${NEGATIVE_CONSTRAINTS.join(', ')}.`,
-    ``,
-    `Photorealistic, cinematic, vertical 9:16 portrait format, smooth construction time-lapse motion.`,
+    `Photorealistic construction time-lapse. Vertical 9:16 portrait. Every frame = real camera footage.`,
   );
   return parts.join('\n');
 }
