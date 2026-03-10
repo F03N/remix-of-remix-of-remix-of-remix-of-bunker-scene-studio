@@ -221,7 +221,7 @@ function buildExactDualFrameVideoRequest(
   const body: Record<string, any> = {
     instances: [{
       prompt,
-      image: { bytesBase64Encoded: startImageBase64 },
+      image: { bytesBase64Encoded: startImageBase64, mimeType: "image/png" },
     }],
     parameters: {
       aspectRatio: "9:16",
@@ -231,12 +231,10 @@ function buildExactDualFrameVideoRequest(
     },
   };
 
-  // Attach end frame using the provider's actual API field
   if (capability.endFrameApiField) {
-    body.instances[0][capability.endFrameApiField] = { bytesBase64Encoded: endImageBase64 };
+    body.instances[0][capability.endFrameApiField] = { bytesBase64Encoded: endImageBase64, mimeType: "image/png" };
   } else {
-    // Generic fallback — some providers use 'lastFrame'
-    body.instances[0].lastFrame = { bytesBase64Encoded: endImageBase64 };
+    body.instances[0].lastFrame = { bytesBase64Encoded: endImageBase64, mimeType: "image/png" };
   }
 
   return body;
@@ -257,7 +255,7 @@ function buildGuidedStartTargetVideoRequest(
   };
 
   if (startImageBase64) {
-    body.instances[0].image = { bytesBase64Encoded: startImageBase64 };
+    body.instances[0].image = { bytesBase64Encoded: startImageBase64, mimeType: "image/png" };
   }
 
   return body;
