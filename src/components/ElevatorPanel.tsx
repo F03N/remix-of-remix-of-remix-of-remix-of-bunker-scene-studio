@@ -8,12 +8,13 @@ const STEPS: { key: WorkflowStep; label: string; number: string }[] = [
   { key: 'create', label: 'CREATE PROJECT', number: '02' },
   { key: 'plan', label: 'PROJECT PLAN', number: '03' },
   { key: 'scenes', label: 'SCENE STUDIO', number: '04' },
-  { key: 'transitions', label: 'TRANSITIONS', number: '05' },
-  { key: 'audio', label: 'AUDIO / VOICE', number: '06' },
-  { key: 'export', label: 'EXPORT', number: '07' },
+  { key: 'continuity', label: 'CONTINUITY CHECK', number: '05' },
+  { key: 'transitions', label: 'TRANSITIONS', number: '06' },
+  { key: 'audio', label: 'AUDIO / VOICE', number: '07' },
+  { key: 'export', label: 'EXPORT', number: '08' },
 ];
 
-const STEP_ORDER: WorkflowStep[] = ['ideas', 'create', 'plan', 'scenes', 'transitions', 'audio', 'export'];
+const STEP_ORDER: WorkflowStep[] = ['ideas', 'create', 'plan', 'scenes', 'continuity', 'transitions', 'audio', 'export'];
 
 function getStepState(step: WorkflowStep, currentStep: WorkflowStep) {
   const currentIdx = STEP_ORDER.indexOf(currentStep);

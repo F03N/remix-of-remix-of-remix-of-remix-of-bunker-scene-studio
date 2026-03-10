@@ -33,6 +33,9 @@ const SHARED_STYLE_RULES = [
   'Same camera angle and framing.',
   'Realistic construction progression only.',
   'No fantasy, no instant transformation.',
+  'No dramatic motion or flashy animation.',
+  'No camera orbit, swing, or fast zoom.',
+  'No heavy morphing or surreal effects.',
 ];
 
 const NEGATIVE_CONSTRAINTS = [
@@ -40,6 +43,12 @@ const NEGATIVE_CONSTRAINTS = [
   'no camera reset', 'no structure redesign', 'no unrealistic morphing',
   'no sudden full completion', 'no surreal effects', 'no cartoon style',
   'no different bunker', 'no teleportation', 'no liquid dissolve',
+  'no dramatic motion', 'no flashy animation', 'no orbit',
+  'no whip movement', 'no fast zoom', 'no camera swing',
+  'no heavy morphing', 'no extra workers unless strictly necessary',
+  'no environment change', 'no unrealistic construction motion',
+  'no exaggerated scene changes', 'no scene redesign',
+  'no dramatic camera behavior', 'no instant material change',
 ];
 
 export function buildPlanningPrompt(params: {
@@ -143,31 +152,41 @@ export interface TransitionPromptParams {
 function buildControlModifiers(params: TransitionPromptParams, isExact: boolean): string[] {
   const parts: string[] = [];
   
-  const motionStrength = params.motionStrength ?? 50;
-  const cameraIntensity = params.cameraIntensity ?? 30;
-  const realismPriority = params.realismPriority ?? 80;
-  const morphSuppression = params.morphSuppression ?? 90;
-  const targetStrictness = params.targetStrictness ?? (isExact ? 95 : 70);
-  const continuityStrictness = params.continuityStrictness ?? 90;
+  const motionStrength = params.motionStrength ?? 20;
+  const cameraIntensity = params.cameraIntensity ?? 5;
+  const realismPriority = params.realismPriority ?? 95;
+  const morphSuppression = params.morphSuppression ?? 98;
+  const targetStrictness = params.targetStrictness ?? (isExact ? 95 : 90);
+  const continuityStrictness = params.continuityStrictness ?? 98;
 
-  if (motionStrength < 30) parts.push('Use very subtle, minimal motion.');
-  else if (motionStrength > 70) parts.push('Use noticeable, dynamic construction motion.');
+  if (motionStrength <= 10) parts.push('Near-zero motion. Scene appears almost completely still.');
+  else if (motionStrength <= 25) parts.push('Very subtle, barely perceptible motion only.');
+  else if (motionStrength <= 40) parts.push('Restrained motion. Small localized construction activity only.');
+  else if (motionStrength > 70) parts.push('Moderate construction motion, still realistic.');
   
-  if (cameraIntensity < 20) parts.push('Keep the camera completely static.');
-  else if (cameraIntensity > 60) parts.push('Allow gentle camera drift or slow zoom.');
+  if (cameraIntensity <= 5) parts.push('Camera MUST be completely locked and static.');
+  else if (cameraIntensity <= 15) parts.push('Camera essentially static. Barely perceptible push-in at most.');
+  else if (cameraIntensity <= 30) parts.push('Camera nearly static. Very subtle drift only.');
+  else parts.push('Gentle camera drift only. No orbit or swing.');
   
-  if (realismPriority > 80) parts.push('Prioritize maximum photorealism over stylistic effects.');
+  if (realismPriority > 90) parts.push('MAXIMUM photorealism. Every frame = real camera footage.');
+  else if (realismPriority > 70) parts.push('High photorealism priority.');
   
-  if (morphSuppression > 70) parts.push('Strongly suppress any morphing, warping, or liquid dissolve effects.');
+  if (morphSuppression > 95) parts.push('AGGRESSIVELY suppress ALL morphing, warping, dissolving effects.');
+  else if (morphSuppression > 70) parts.push('Strongly suppress morphing and dissolve effects.');
   
   if (isExact && targetStrictness > 80) {
-    parts.push('The final frame MUST closely match the end frame keyframe.');
+    parts.push('Final frame MUST closely match the end frame keyframe.');
+  } else if (!isExact && targetStrictness > 85) {
+    parts.push('Guide transition very strongly toward the target end state.');
   } else if (!isExact && targetStrictness > 70) {
-    parts.push('Guide the transition strongly toward the target end state appearance.');
+    parts.push('Guide transition toward the target end state appearance.');
   }
   
-  if (continuityStrictness > 80) {
-    parts.push('Architectural continuity is critical — no structural changes beyond what the transition requires.');
+  if (continuityStrictness > 95) {
+    parts.push('Architectural continuity is ABSOLUTE. No layout drift.');
+  } else if (continuityStrictness > 80) {
+    parts.push('Architectural continuity is critical.');
   }
 
   return parts;

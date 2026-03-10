@@ -51,7 +51,7 @@ export interface Transition {
 
 export type QualityMode = 'fast' | 'balanced' | 'quality';
 
-export type WorkflowStep = 'ideas' | 'create' | 'plan' | 'scenes' | 'transitions' | 'audio' | 'export';
+export type WorkflowStep = 'ideas' | 'create' | 'plan' | 'scenes' | 'continuity' | 'transitions' | 'audio' | 'export';
 
 export interface QualityPreset {
   label: string;

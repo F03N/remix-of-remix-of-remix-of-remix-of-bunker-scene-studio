@@ -185,8 +185,8 @@ export default function SceneStudioPage() {
       </div>
 
       <div className="mt-8">
-        <button onClick={() => setStep('transitions')} className="px-8 py-3 bg-spark text-primary-foreground font-display text-sm tracking-wider rounded-sm hover:brightness-110 transition-all">
-          [ PROCEED TO TRANSITION VIDEOS ]
+        <button onClick={() => setStep('continuity')} className="px-8 py-3 bg-spark text-primary-foreground font-display text-sm tracking-wider rounded-sm hover:brightness-110 transition-all">
+          [ PROCEED TO CONTINUITY REVIEW ]
         </button>
       </div>
     </div>

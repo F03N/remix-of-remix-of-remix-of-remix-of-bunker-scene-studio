@@ -5,6 +5,7 @@ import IdeasPage from './IdeasPage';
 import ProjectCreatePage from './ProjectCreatePage';
 import ProjectPlanPage from './ProjectPlanPage';
 import SceneStudioPage from './SceneStudioPage';
+import ContinuityReviewPage from './ContinuityReviewPage';
 import TransitionStudioPage from './TransitionStudioPage';
 import AudioPage from './AudioPage';
 import ExportPage from './ExportPage';
@@ -14,6 +15,7 @@ const PAGES = {
   create: ProjectCreatePage,
   plan: ProjectPlanPage,
   scenes: SceneStudioPage,
+  continuity: ContinuityReviewPage,
   transitions: TransitionStudioPage,
   audio: AudioPage,
   export: ExportPage,
