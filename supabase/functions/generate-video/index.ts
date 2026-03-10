@@ -255,7 +255,7 @@ function buildGuidedStartTargetVideoRequest(
   };
 
   if (startImageBase64) {
-    body.instances[0].image = { bytesBase64Encoded: startImageBase64 };
+    body.instances[0].image = { bytesBase64Encoded: startImageBase64, mimeType: "image/png" };
   }
 
   return body;
